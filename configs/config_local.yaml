@@ -1,0 +1,65 @@
+env:
+  serviceName: "cryp-kaspad"
+  log:
+    # level 可動態更新，無需重啟服務
+    level: debug
+    output: file
+    outputs:
+      file: ./logs/cryp_kaspad_log
+      elasticsearch:
+        - http://elasticsearch:9200
+  debug: true
+  port: 30000
+
+pyroscope:
+  isRunStart: true
+  url: "http://127.0.0.1:4041"
+
+db:
+  gorm:
+    logMode: warn
+  master:
+    host: mysql
+    port: 3306
+    username: root
+    password: 1234
+    name: db_cryp_kaspad
+    maxIdleConns: 10
+    maxOpenConns: 30
+    connMaxLifetime: 30
+
+node:
+  url:
+    #- "https://mainnet.genereos.io"
+    #- "https://eos.eosphere.io"
+    #- "http://10.42.16.56:8888"
+    #- "http://10.34.0.108:8888"
+    #- "https://node2.eosphere.io"
+    - "https://api.eosrio.io"
+  confirm: 12
+  gasPrice: 1000000000
+  #accountID: "shikanokopay"
+  #privateKey: "5KPk1hg8vJgBXA4QqmtVDTwX6SXJoueYiLGSPhZPc7y1e3VNEnV"
+  accountID: "shikanoko.gm"
+  privateKey: "5KMHTN5mhAVRz71QvMcgZP4kEsm3bGo6JqkbMVg3kQDMK6oGseG"
+  retry: 3
+
+wallet:
+  deposit:
+    accountID: "eosexdeposit"
+    privateKey: "5JK3CcFy9tULdUTMf4XiSWZVfoSJ5Mw45tT1YjsHdHMA2i6RjPq"
+    publicKey: "EOS7n9oiHdNxmQjue9fjUg42ZoyEKwGqfcjUpQ6YfH6ydkMyzZyyg"
+
+notify:
+  opDevURL: "http://61.216.66.135:78"
+  opPreURL: "http://pre-paymentpooltoken.1-pay.co"
+  opURL: "http://paymentpooltoken.1-pay.co"
+  qaURL: "http://mock.logintt.com"
+
+goroutineSize:
+  block: 10
+  trans: 5
+  db: 10
+
+
+#quick buzz imitate change ethics speak

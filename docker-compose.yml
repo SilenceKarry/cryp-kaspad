@@ -1,0 +1,82 @@
+version: "3"
+services:
+  elasticsearch:
+    image: elasticsearch:7.17.10
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - discovery.type=single-node
+    volumes:
+      - ./elasticsearch/data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+      start_interval: 2s
+  kibana:
+    image: kibana:7.17.10
+    ports:
+      - 5601:5601
+    depends_on:
+      - elasticsearch
+  pyroscope:
+    image: "pyroscope/pyroscope:latest"
+    ports:
+      - "4041:4040"
+    command:
+      - "server"
+  golang-migrate:
+    image: migrate/migrate:4
+    restart: on-failure
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./scripts/migrate/migrations/mysql:/migrations/mysql
+    command: ["--path", "migrations/mysql", "--database", "mysql://root:1234@tcp(mysql:3306)/db_cryp_kaspad?charset=utf8&parseTime=True&loc=Local", "up"]
+    links:
+      - mysql
+  mysql:
+    image: mysql:8
+    ports:
+      - "3306:3306"
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "1234"
+      MYSQL_DATABASE: "db_cryp_kaspad"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p1234"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+      start_interval: 2s
+  go:
+    build:
+      context: .
+      #使用Dockerfile_DEV要加Volumes跟command, 使用普通的Dockerfile要註解掉Volumes跟command
+      dockerfile: ./build/Dockerfile_DEV
+      #dockerfile: ./build/Dockerfile
+    restart: on-failure
+    depends_on: 
+      elasticsearch: 
+        condition: service_healthy
+      pyroscope: 
+        condition: service_started
+      mysql:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - ./configs/config_local.yaml:/app/config.yaml
+    command: sleep infinity
+    ports:
+      - 30000:30000
+      - 7777:7777 #dlv調適用
+    environment:
+      TZ: Asia/Taipei
+# networks:
+#   web:
+#     external: true

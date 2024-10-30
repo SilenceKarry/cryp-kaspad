@@ -1,0 +1,20 @@
+# mac
+.DS_Store
+
+# IntelliJ IDEA
+.idea
+
+# vscode IDE
+.vscode
+
+# log
+/logs
+elasticsearch
+
+# config
+/configs/config.yaml
+
+# cryp-kaspad-server
+/scripts/cryp-kaspad-server
+
+/config.yaml

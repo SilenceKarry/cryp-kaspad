@@ -1,0 +1,42 @@
+env:
+  serviceName: "cryp-kaspad"
+  log:
+    # level 可動態更新，無需重啟服務
+    level: debug
+    output: elasticsearch
+    outputs:
+      file: ./logs/cryp_kaspad_log
+      elasticsearch:
+        - http://10.99.113.154:9200
+  debug: true
+  port: 30000
+
+pyroscope:
+  isRunStart: true
+  url: "http://10.99.113.154:4040"
+
+db:
+  gorm:
+    logMode: warn
+  master:
+    host: 10.99.113.153
+    port: 3306
+    username: root
+    password: 1234
+    name: db_cryp_kaspad
+    maxIdleConns: 10
+    maxOpenConns: 30
+    connMaxLifetime: 30
+
+node:
+  url:
+    - "https://eosereum.publicnode.com"
+    - "https://eos.getblock.io/8bbf469c-090e-438d-9632-aa649f41ab63/mainnet/"
+  confirm: 12
+  gasPrice: 1000000000
+
+notify:
+  opDevURL: "http://61.216.66.135:78"
+  opPreURL: "http://pre-crypto.1-pay.co"
+  opURL: "http://crypto.1-pay.co"
+  qaURL: "https://mock.logintt.com"

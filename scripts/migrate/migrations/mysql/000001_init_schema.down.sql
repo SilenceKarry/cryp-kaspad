@@ -1,0 +1,6 @@
+DROP TABLE IF EXISTS `address`;
+DROP TABLE IF EXISTS `tokens`;
+DROP TABLE IF EXISTS `block_height`;
+DROP TABLE IF EXISTS `transaction`;
+DROP TABLE IF EXISTS `withdraw`;
+DROP TABLE IF EXISTS `config`;
