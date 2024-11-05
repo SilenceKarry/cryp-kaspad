@@ -9,8 +9,8 @@ import (
 	"cryp-kaspad/internal/domain/usecase"
 	"cryp-kaspad/internal/domain/vo"
 	crypNotify "cryp-kaspad/internal/libs/cryp-notify"
-	"cryp-kaspad/internal/libs/eos"
-	"cryp-kaspad/internal/libs/eos/core/types"
+	kaspa "cryp-kaspad/internal/libs/kaspa"
+	"cryp-kaspad/internal/libs/kaspa/core/types"
 	"cryp-kaspad/internal/libs/response"
 	"cryp-kaspad/internal/utils"
 	"errors"
@@ -20,8 +20,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
+	//"github.com/ethereum/go-ethereum/common"
+	//"github.com/ethereum/go-ethereum/crypto"
 	"github.com/panjf2000/ants"
 	"github.com/shopspring/decimal"
 	"github.com/tidwall/gjson"
@@ -38,8 +38,8 @@ var logTransferSigHash string
 var logERC20TransferSigHash string
 
 func init() {
-	logTransferSigHash = getLogTransferSigHash().Hex()
-	logERC20TransferSigHash = getLogERC20TransferSigHash().Hex()
+	// logTransferSigHash = getLogTransferSigHash().Hex()
+	// logERC20TransferSigHash = getLogERC20TransferSigHash().Hex()
 }
 
 type TransactionUseCaseCond struct {
@@ -139,15 +139,18 @@ func (uc *transactionUseCase) GetByTxHash(ctx context.Context, req vo.TransGetTx
 func (uc *transactionUseCase) GetBlockHeight(ctx context.Context) (vo.BlockHeightGetResp, response.Status, error) {
 	urls := uc.ConfigUseCase.GetNodeUrl(ctx)
 
-	client, err := eos.NewClient(ctx, urls)
+	c, err := kaspa.StartDeamon(ctx, urls)
 	if err != nil {
-		return vo.BlockHeightGetResp{}, response.CodeInternalError, fmt.Errorf("eos.NewClient error: %s", err)
+		return vo.BlockHeightGetResp{}, response.CodeInternalError, fmt.Errorf("StartDeamon error: %s", err)
 	}
 
-	latestHeight, err := client.GetBlockNumberLatest(ctx)
+	getBlockCountResponse, err := c.RpcClient.GetVirtualSelectedParentBlueScore()
 	if err != nil {
-		return vo.BlockHeightGetResp{}, response.CodeInternalError, fmt.Errorf("eosevm.GetBlockNumberLatest error: %s", err)
+		return vo.BlockHeightGetResp{}, response.CodeInternalError, fmt.Errorf("Error Retriving BlockCount: %s", err)
 	}
+
+	println("getBlockCountResponse:", getBlockCountResponse.BlueScore)
+	latestHeight := int64(getBlockCountResponse.BlueScore)
 
 	dbBlockHeight, err := uc.BlockHeightRepo.Get(ctx)
 	if err != nil && err != gorm.ErrRecordNotFound {
@@ -181,11 +184,11 @@ func (uc *transactionUseCase) runListenBlock() {
 
 	urls := uc.ConfigUseCase.GetNodeUrl(ctx)
 
-	client, err := eos.NewClient(ctx, urls)
+	client, err := kaspa.NewClient(ctx, urls)
 	if err != nil {
 		log.WithFields(log.Fields{
 			utils.LogUUID: ctx.Value(utils.LogUUID),
-			"err":         fmt.Errorf("eos.NewClient error: %s", err),
+			"err":         fmt.Errorf("kaspa.NewClient error: %s", err),
 		}).Error("runListenBlock")
 		return
 	}
@@ -221,7 +224,7 @@ func (uc *transactionUseCase) runListenBlock() {
 	uc.syncBlockChan(transData)
 }
 
-func (uc *transactionUseCase) checkNewBlock(ctx context.Context, client *eos.Eos) (int64, int64, bool, error) {
+func (uc *transactionUseCase) checkNewBlock(ctx context.Context, client *kaspa.Eos) (int64, int64, bool, error) {
 	latestHeight, err := client.GetBlockNumberLatest(ctx)
 	if err != nil {
 		return 0, 0, false, fmt.Errorf("eosevm.GetBlockNumberLatest error: %s", err)
@@ -256,12 +259,12 @@ func (uc *transactionUseCase) checkNewBlock(ctx context.Context, client *eos.Eos
 
 type blockHeightData struct {
 	ctx    context.Context
-	client *eos.Eos
+	client *kaspa.Eos
 
 	blockHeight int64
 }
 
-func (uc *transactionUseCase) getBlockHeight(ctx context.Context, client *eos.Eos, blockHeight, latestHeight int64) <-chan blockHeightData {
+func (uc *transactionUseCase) getBlockHeight(ctx context.Context, client *kaspa.Eos, blockHeight, latestHeight int64) <-chan blockHeightData {
 	blockHeightChan := make(chan blockHeightData, 1)
 
 	go func() {
@@ -292,7 +295,7 @@ func (uc *transactionUseCase) getBlockHeight(ctx context.Context, client *eos.Eo
 
 type blockData struct {
 	ctx    context.Context
-	client *eos.Eos
+	client *kaspa.Eos
 
 	blockIsFail bool
 	blockHeight int64
@@ -489,7 +492,7 @@ type transTokens struct {
 	errChan chan<- error
 
 	ctx             context.Context
-	client          *eos.Eos
+	client          *kaspa.Eos
 	collectionTrans chan<- entity.Transaction
 
 	block *types.Block
@@ -498,13 +501,13 @@ type transTokens struct {
 	contractAddr2Tokens map[string]entity.Tokens
 }
 
-func (uc *transactionUseCase) makeTransactionByTokens(ctx context.Context, client *eos.Eos, closeNotify chan<- struct{},
+func (uc *transactionUseCase) makeTransactionByTokens(ctx context.Context, client *kaspa.Eos, closeNotify chan<- struct{},
 	errChan chan<- error, collectionTrans chan<- entity.Transaction, block *types.Block) error {
-	contractAddress, err := uc.TokensUseCase.GetContractAddress(ctx)
-	if err != nil {
-		return fmt.Errorf("TokensUseCase.GetContractAddress error: %s", err)
-	}
-
+	// contractAddress, err := uc.TokensUseCase.GetContractAddress(ctx)
+	// if err != nil {
+	// 	return fmt.Errorf("TokensUseCase.GetContractAddress error: %s", err)
+	// }
+	contractAddress := "temp"
 	if len(contractAddress) == 0 {
 		go func() {
 			closeNotify <- struct{}{}
@@ -655,10 +658,10 @@ func (uc *transactionUseCase) getTransactionByTokens(closeChan chan<- struct{}, 
 				"action": action.String(),
 			}).Info("action info")
 
-			amount, err := eos.AssetConvertToDecimal(quantity)
+			amount, err := kaspa.AssetConvertToDecimal(quantity)
 			if err != nil {
 				select {
-				case v.errChan <- fmt.Errorf("eos.AssetConvertToDecimal error: %s", err):
+				case v.errChan <- fmt.Errorf("kaspa.AssetConvertToDecimal error: %s", err):
 				default:
 				}
 			}
@@ -782,18 +785,18 @@ func (uc *transactionUseCase) getTxType(address2Struct map[string]struct{}, from
 	return 0, errors.New("txType not found")
 }
 
-func getLogTransferSigHash() common.Hash {
-	logTransferSig := []byte("Transfer(address,address,uint256)")
-	logTransferSigHash := crypto.Keccak256Hash(logTransferSig)
+// func getLogTransferSigHash() common.Hash {
+// 	logTransferSig := []byte("Transfer(address,address,uint256)")
+// 	logTransferSigHash := crypto.Keccak256Hash(logTransferSig)
 
-	return logTransferSigHash
-}
+// 	return logTransferSigHash
+// }
 
-func getLogERC20TransferSigHash() common.Hash {
-	logTransferSig := []byte("ERC20Transfer(address,address,uint256)")
-	logTransferSigHash := crypto.Keccak256Hash(logTransferSig)
-	return logTransferSigHash
-}
+// func getLogERC20TransferSigHash() common.Hash {
+// 	logTransferSig := []byte("ERC20Transfer(address,address,uint256)")
+// 	logTransferSigHash := crypto.Keccak256Hash(logTransferSig)
+// 	return logTransferSigHash
+// }
 
 func (uc *transactionUseCase) syncBlockChan(transData <-chan transData) []entity.Transaction {
 	defer func() {
@@ -943,11 +946,11 @@ func (uc *transactionUseCase) TransactionConfirm() {
 
 	urls := uc.ConfigUseCase.GetNodeUrl(ctx)
 
-	client, err := eos.NewClient(ctx, urls)
+	client, err := kaspa.NewClient(ctx, urls)
 	if err != nil {
 		log.WithFields(log.Fields{
 			utils.LogUUID: ctx.Value(utils.LogUUID),
-			"err":         fmt.Errorf("eos.NewClient error: %s", err),
+			"err":         fmt.Errorf("kaspa.NewClient error: %s", err),
 		}).Error("runListenBlock")
 		return
 	}
@@ -973,7 +976,7 @@ func (uc *transactionUseCase) TransactionConfirm() {
 	}
 }
 
-func (uc *transactionUseCase) getTransactionConfirm(ctx context.Context, client *eos.Eos) ([]entity.Transaction, error) {
+func (uc *transactionUseCase) getTransactionConfirm(ctx context.Context, client *kaspa.Eos) ([]entity.Transaction, error) {
 	latestHeight, err := client.GetBlockNumberLatest(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("eosevm.GetBlockNumberLatest error: %s", err)
@@ -987,13 +990,13 @@ func (uc *transactionUseCase) getTransactionConfirm(ctx context.Context, client 
 	return trans, nil
 }
 
-func (uc *transactionUseCase) runTransactionConfirm(ctx context.Context, client *eos.Eos, trans []entity.Transaction) error {
+func (uc *transactionUseCase) runTransactionConfirm(ctx context.Context, client *kaspa.Eos, trans []entity.Transaction) error {
 	for i := range trans {
 		v := trans[i]
 
 		block, err := client.GetBlockByNumberCustom(ctx, uint32(v.BlockHeight))
 		if err != nil {
-			return fmt.Errorf("eos.GetBlockByNumberCustom error: %s", err)
+			return fmt.Errorf("kaspa.GetBlockByNumberCustom error: %s", err)
 		}
 
 		var t *types.Transaction
@@ -1279,11 +1282,11 @@ func (uc *transactionUseCase) getMerchantType(ctx context.Context, trans entity.
 func (uc *transactionUseCase) CreateTransactionByBlockNumber(ctx context.Context, req vo.CreateTransactionByBlockNumberReq) ([]entity.Transaction, response.Status, error) {
 	urls := uc.ConfigUseCase.GetNodeUrl(ctx)
 
-	client, err := eos.NewClient(ctx, urls)
+	client, err := kaspa.NewClient(ctx, urls)
 	if err != nil {
 		log.WithFields(log.Fields{
 			utils.LogUUID: ctx.Value(utils.LogUUID),
-			"err":         fmt.Errorf("eos.NewClient error: %s", err),
+			"err":         fmt.Errorf("kaspa.NewClient error: %s", err),
 		}).Error("runListenBlock")
 		return nil, response.CodeInternalError, err
 	}
@@ -1353,11 +1356,11 @@ func (uc *transactionUseCase) syncBlockWithTransactionByHeight(ctx context.Conte
 	blockCtx, blockCancel := context.WithCancel(ctx)
 	defer blockCancel()
 
-	client, err := eos.NewClient(ctx, uc.ConfigUseCase.GetNodeUrl(ctx))
+	client, err := kaspa.NewClient(ctx, uc.ConfigUseCase.GetNodeUrl(ctx))
 	if err != nil {
 		log.WithFields(log.Fields{
 			"err": err,
-		}).Error("syncBlockWithTransactionByHeight.eos.NewClient")
+		}).Error("syncBlockWithTransactionByHeight.kaspa.NewClient")
 
 		return nil
 	}
@@ -1677,7 +1680,7 @@ func (uc *transactionUseCase) syncBlockWithTransactionByHeight(ctx context.Conte
 	return result
 }
 
-func (uc *transactionUseCase) buildTransactionsFromChen(bd blockData_New, client *eos.Eos) ([]entity.Transaction, error) {
+func (uc *transactionUseCase) buildTransactionsFromChen(bd blockData_New, client *kaspa.Eos) ([]entity.Transaction, error) {
 	type data struct {
 		Result []entity.Transaction
 		err    error
@@ -1768,7 +1771,7 @@ func (uc *transactionUseCase) buildTransactionsFromChen(bd blockData_New, client
 				"action": action.String(),
 			}).Info("action info")
 
-			amount, err := eos.AssetConvertToDecimal(quantity)
+			amount, err := kaspa.AssetConvertToDecimal(quantity)
 			if err != nil {
 				log.WithFields(log.Fields{
 					"err": err,
@@ -1880,7 +1883,7 @@ func (uc *transactionUseCase) buildTransactionsFromChen(bd blockData_New, client
 	return result, err
 }
 
-func (uc *transactionUseCase) getBlock_New(ctx context.Context, blockHeight int64, client *eos.Eos) (blockData_New, error) {
+func (uc *transactionUseCase) getBlock_New(ctx context.Context, blockHeight int64, client *kaspa.Eos) (blockData_New, error) {
 	block, err := client.GetBlockByNumberCustom(ctx, uint32(blockHeight))
 	if err != nil {
 		return blockData_New{}, fmt.Errorf("client.GetBlockByNumber error: %s", err)
@@ -1921,11 +1924,11 @@ func (uc *transactionUseCase) runListenBlock_New() {
 	ctx, cancelCtx := context.WithTimeout(ctx, 6*utils.Time30S)
 	defer cancelCtx()
 
-	client, err := eos.NewClient(ctx, uc.ConfigUseCase.GetNodeUrl(ctx))
+	client, err := kaspa.NewClient(ctx, uc.ConfigUseCase.GetNodeUrl(ctx))
 	if err != nil {
 		log.WithFields(log.Fields{
 			utils.LogUUID: ctx.Value(utils.LogUUID),
-			"err":         fmt.Errorf("eos.NewClient error: %s", err),
+			"err":         fmt.Errorf("kaspa.NewClient error: %s", err),
 		}).Error("runListenBlock")
 		return
 	}

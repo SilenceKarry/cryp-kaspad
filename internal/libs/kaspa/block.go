@@ -1,8 +1,8 @@
-package eos
+package kaspa
 
 import (
 	"context"
-	"cryp-kaspad/internal/libs/eos/core/types"
+	"cryp-kaspad/internal/libs/kaspa/core/types"
 	"fmt"
 
 	"github.com/eoscanada/eos-go"

@@ -7,7 +7,7 @@ toolchain go1.23.2
 require (
 	github.com/elastic/go-elasticsearch/v7 v7.17.7
 	github.com/eoscanada/eos-go v0.10.2
-	github.com/ethereum/go-ethereum v1.14.7
+	//github.com/ethereum/go-ethereum v1.14.7
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-playground/locales v0.14.1
@@ -43,6 +43,13 @@ require (
 )
 
 require (
+	github.com/jessevdk/go-flags v1.4.0
+	github.com/kaspanet/kaspad v0.12.19
+	github.com/pkg/errors v0.9.1
+	google.golang.org/grpc v1.52.0
+)
+
+require (
 	contrib.go.opencensus.io/exporter/stackdriver v0.12.6 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
@@ -51,12 +58,10 @@ require (
 	github.com/aquasecurity/libbpfgo v0.3.0-libbpf-0.8.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blendle/zapdriver v1.3.1 // indirect
-	github.com/btcsuite/btcd/btcec/v2 v2.3.4 // indirect
+	github.com/btcsuite/btcutil v1.0.2 // indirect
 	github.com/btcsuite/go-socks v0.0.0-20170105172521-4720035b7bfd // indirect
-	github.com/btcsuite/winsvc v1.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 // indirect
 	github.com/emicklei/go-restful v2.16.0+incompatible // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
@@ -66,6 +71,7 @@ require (
 	github.com/go-openapi/swag v0.21.1 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
+	github.com/gofrs/flock v0.8.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -77,8 +83,6 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/holiman/uint256 v1.3.1 // indirect
-	github.com/jessevdk/go-flags v1.4.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jonboulle/clockwork v0.3.0 // indirect
@@ -87,7 +91,6 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kaspanet/go-muhash v0.0.4 // indirect
 	github.com/kaspanet/go-secp256k1 v0.0.7 // indirect
-	github.com/kaspanet/kaspad v0.12.19 // indirect
 	github.com/leodido/go-urn v1.2.2 // indirect
 	github.com/lestrrat-go/strftime v1.0.6 // indirect
 	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
@@ -102,7 +105,6 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.7 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.14.0 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
@@ -122,6 +124,7 @@ require (
 	github.com/tidwall/pretty v1.0.2 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
+	github.com/tyler-smith/go-bip39 v1.1.0 // indirect
 	github.com/ugorji/go/codec v1.2.10 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
@@ -137,7 +140,6 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20221227171554-f9683d7f8bef // indirect
-	google.golang.org/grpc v1.52.0 // indirect
 	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

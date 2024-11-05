@@ -8,7 +8,7 @@ import (
 	"cryp-kaspad/internal/domain/repository"
 	"cryp-kaspad/internal/domain/usecase"
 	"cryp-kaspad/internal/domain/vo"
-	"cryp-kaspad/internal/libs/eos"
+	kaspa "cryp-kaspad/internal/libs/kaspa"
 	"cryp-kaspad/internal/libs/response"
 	"errors"
 	"fmt"
@@ -61,14 +61,14 @@ func (uc *withdrawUseCase) Create(ctx context.Context, req vo.WithdrawCreateReq)
 
 	urls := uc.ConfigUseCase.GetNodeUrl(ctx)
 
-	client, err := eos.NewClient(ctx, urls)
+	client, err := kaspa.StartDeamon(ctx, urls)
 	if err != nil {
-		return vo.WithdrawCreateResp{}, response.CodeInternalError, fmt.Errorf("eos.NewClient error: %s", err)
+		return vo.WithdrawCreateResp{}, response.CodeInternalError, fmt.Errorf("kaspa.NewClient error: %s", err)
 	}
 
 	balance, err := client.GetBalanceToken(ctx, req.FromAddress, tokens.ContractAddr, tokens.CryptoType)
 	if err != nil {
-		return vo.WithdrawCreateResp{}, response.CodeInternalError, fmt.Errorf("eos.GetBalanceToken error: %s", err)
+		return vo.WithdrawCreateResp{}, response.CodeInternalError, fmt.Errorf("kaspa.GetBalanceToken error: %s", err)
 	}
 
 	if balance.Cmp(req.Amount) < 0 {
@@ -87,14 +87,14 @@ func (uc *withdrawUseCase) Create(ctx context.Context, req vo.WithdrawCreateReq)
 			}).Error("client.SendTransaction error")
 
 			if i+1 < retry {
-				canRetry, err := eos.IsCPULimitErrorFalsePositive(err)
+				canRetry, err := kaspa.IsCPULimitErrorFalsePositive(err)
 				if err != nil {
 					log.WithFields(log.Fields{
 						"from_address": req.FromAddress,
 						"to_address":   req.ToAddress,
 						"amount":       req.Amount,
 						"error":        err,
-					}).Error("eos.IsCPULimitErrorFalsePositive error")
+					}).Error("kaspa.IsCPULimitErrorFalsePositive error")
 
 					continue
 				}
@@ -112,7 +112,7 @@ func (uc *withdrawUseCase) Create(ctx context.Context, req vo.WithdrawCreateReq)
 	}
 
 	if txHash == "" {
-		return vo.WithdrawCreateResp{}, response.CodeInternalError, fmt.Errorf("eos.SendTransaction failed")
+		return vo.WithdrawCreateResp{}, response.CodeInternalError, fmt.Errorf("kaspa.SendTransaction failed")
 	}
 
 	if _, err := uc.create(ctx, req, txHash); err != nil {

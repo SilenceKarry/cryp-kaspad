@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/common"
+	//"github.com/ethereum/go-ethereum/common"
 
 	"go.uber.org/dig"
 )
@@ -51,22 +51,22 @@ func (uc *tokensUseCase) GetList(ctx context.Context) ([]entity.Tokens, error) {
 	return uc.TokensRepo.GetList(ctx)
 }
 
-func (uc *tokensUseCase) GetContractAddress(ctx context.Context) ([]common.Address, error) {
-	tokens, err := uc.TokensRepo.GetList(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("TokensRepo.GetContractAddress error: %s", err)
-	}
+// func (uc *tokensUseCase) GetContractAddress(ctx context.Context) ([]common.Address, error) {
+// 	tokens, err := uc.TokensRepo.GetList(ctx)
+// 	if err != nil {
+// 		return nil, fmt.Errorf("TokensRepo.GetContractAddress error: %s", err)
+// 	}
 
-	result := make([]common.Address, 0, len(tokens))
+// 	result := make([]common.Address, 0, len(tokens))
 
-	for _, v := range tokens {
-		if len(v.ContractAddr) > 0 {
-			result = append(result, common.HexToAddress(v.ContractAddr))
-		}
-	}
+// 	for _, v := range tokens {
+// 		if len(v.ContractAddr) > 0 {
+// 			result = append(result, common.HexToAddress(v.ContractAddr))
+// 		}
+// 	}
 
-	return result, nil
-}
+// 	return result, nil
+// }
 
 func (uc *tokensUseCase) GetContractAddr2Tokens(ctx context.Context) (map[string]entity.Tokens, error) {
 	tokens, err := uc.TokensRepo.GetList(ctx)

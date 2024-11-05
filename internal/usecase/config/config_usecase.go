@@ -9,9 +9,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/kaspanet/kaspad/infrastructure/config"
+	_ "github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"go.uber.org/dig"
 	"gorm.io/gorm"
+
+	_ "github.com/jessevdk/go-flags"
 )
 
 type ConfigCond struct {
@@ -22,6 +26,11 @@ type ConfigCond struct {
 
 type configUseCase struct {
 	ConfigCond
+}
+type BalanceConf struct {
+	DaemonAddress string `long:"daemonaddress" short:"d" description:"Wallet daemon server to connect to"`
+	Verbose       bool   `long:"verbose" short:"v" description:"Verbose: show addresses with balance"`
+	config.NetworkFlags
 }
 
 func NewConfigUseCase(cond ConfigCond) usecase.ConfigUseCase {
@@ -205,4 +214,9 @@ func (uc *configUseCase) GetNodeUrl(ctx context.Context) []string {
 	}
 
 	return configMap[configs.ViperNodeURL].([]string)
+}
+
+func (uc *configUseCase) ChkTestNet(ctx context.Context) bool {
+	testFlag := configs.App.ChkTestNet()
+	return testFlag
 }

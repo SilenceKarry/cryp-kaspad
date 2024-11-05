@@ -55,6 +55,8 @@ const (
 	goroutineSizeTrans = "goroutineSize.Trans"
 
 	walletDesposit = "wallet.deposit"
+
+	Testnet = "testNet.Enable"
 )
 
 func newConfigApp() *configApp {
@@ -132,6 +134,7 @@ func newConfigApp() *configApp {
 		goroutineSizeTrans: viper.GetInt(goroutineSizeTrans),
 
 		WalletDesposit: wd,
+		isTestNet:      viper.GetBool(Testnet),
 	}
 }
 
@@ -196,6 +199,7 @@ type configApp struct {
 	goroutineSizeTrans int
 
 	WalletDesposit WalletDesposit
+	isTestNet      bool
 }
 
 func (c *configApp) reload() {
@@ -361,6 +365,9 @@ func (c *configApp) IsWhitelistedKey(key string) bool {
 func (c *configApp) TryGetKey(vKey ViperKey) (string, bool) {
 	key, b := c.whitelistedKeyToViper[vKey]
 	return key, b
+}
+func (c *configApp) ChkTestNet() bool {
+	return c.isTestNet
 }
 
 func (c *configApp) GetValueWithKey(key string) (interface{}, error) {

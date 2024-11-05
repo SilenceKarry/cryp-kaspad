@@ -3,7 +3,7 @@ package client
 import (
 	"bytes"
 	"context"
-	"cryp-kaspad/internal/libs/eos/core/types"
+	"cryp-kaspad/internal/libs/kaspa/core/types"
 	"encoding/json"
 	"fmt"
 
@@ -12,7 +12,14 @@ import (
 	"net/url"
 	"strings"
 
+	"time"
+
 	eos "github.com/eoscanada/eos-go"
+	kaspa "github.com/eoscanada/eos-go"
+	"github.com/kaspanet/kaspad/cmd/kaspawallet/daemon/pb"
+	"github.com/kaspanet/kaspad/cmd/kaspawallet/daemon/server"
+	"github.com/pkg/errors"
+	"google.golang.org/grpc"
 )
 
 type Client struct {
@@ -46,7 +53,7 @@ func DialContext(ctx context.Context, host string) (*Client, error) {
 	return &Client{
 		c:    c,
 		host: h.String(),
-		API:  eos.New(h.String()),
+		API:  kaspa.New(h.String()),
 	}, nil
 }
 
@@ -144,7 +151,7 @@ func (ec *Client) GetAccount(ctx context.Context, accountName string) (*types.Ac
 }
 
 func (ec *Client) GetTokenBalance(ctx context.Context, accountName string, contractName string, symbol string) ([]string, error) {
-	assets, err := ec.API.GetCurrencyBalance(ctx, eos.AN(accountName), symbol, eos.AN(contractName))
+	assets, err := ec.API.GetCurrencyBalance(ctx, kaspa.AN(accountName), symbol, kaspa.AN(contractName))
 	if err != nil {
 		return []string{}, err
 	}
@@ -162,7 +169,7 @@ func (ec *Client) ImportPrivateKey(ctx context.Context, privateKey string) error
 		return fmt.Errorf("private key is empty")
 	}
 
-	keyBag := &eos.KeyBag{}
+	keyBag := &kaspa.KeyBag{}
 	err := keyBag.ImportPrivateKey(ctx, privateKey)
 	if err != nil {
 		return err
@@ -170,4 +177,24 @@ func (ec *Client) ImportPrivateKey(ctx context.Context, privateKey string) error
 
 	ec.API.SetSigner(keyBag)
 	return nil
+}
+
+// =================
+func Connect(address string) (pb.KaspawalletdClient, func(), error) {
+
+	// 連線是本地的，因此 1 秒逾時就足夠了
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	conn, err := grpc.DialContext(ctx, address, grpc.WithInsecure(), grpc.WithBlock(), grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(server.MaxDaemonSendMsgSize)))
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			return nil, nil, errors.New("kaspawallet daemon is not running, start it with `kaspawallet start-daemon`")
+		}
+		return nil, nil, err
+	}
+
+	return pb.NewKaspawalletdClient(conn), func() {
+		conn.Close()
+	}, nil
 }

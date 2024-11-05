@@ -13,5 +13,6 @@ type ConfigUseCase interface {
 	GetWithVKey(ctx context.Context, vkey configs.ViperKey) (interface{}, error)
 	GetClientConfig(ctx context.Context) ([]string, string, string)
 	GetNodeUrl(ctx context.Context) []string
+	ChkTestNet(ctx context.Context) bool
 	// Sync(ctx context.Context) error
 }

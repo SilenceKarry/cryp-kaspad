@@ -1,8 +1,8 @@
-package eos
+package kaspa
 
 import (
 	"context"
-	"cryp-kaspad/internal/libs/eos/client"
+	"cryp-kaspad/internal/libs/kaspa/client"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,41 +16,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/exp/rand"
 )
-
-// func (e *Eos) GetBalanceEOS(addrStr string) (decimal.Decimal, error) {
-// 	ctx, cancel := context.WithTimeout(context.Background(), utils.Time30S)
-// 	defer cancel()
-
-// 	result, err := e.getBalance(ctx, addrStr)
-// 	if err != nil {
-// 		return decimal.Decimal{}, fmt.Errorf("get balance wei error: %s", err)
-// 	}
-
-// 	return balance, nil
-// }
-
-// func (e *Eos) GetBalanceWei(ctx context.Context, addrStr string) (decimal.Decimal, error) {
-// 	result, err := e.getBalance(ctx, addrStr)
-// 	if err != nil {
-// 		return decimal.Decimal{}, fmt.Errorf("get balance wei error: %s", err)
-// 	}
-
-// 	balance := decimal.NewFromBigInt(result, 0)
-
-// 	return balance, nil
-// }
-
-// func (e *Eos) getBalance(ctx context.Context, addrStr string) (*big.Int, error) {
-// 	addr := common.HexToAddress(addrStr)
-
-// 	// 注意: nil = 取最新餘額
-// 	result, err := e.Client.BalanceAt(ctx, addr, nil)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("BalanceAt error: %s", err)
-// 	}
-
-// 	return result, nil
-// }
 
 const (
 	letterBytes    = "abcdefghijklmnopqrstuvwxyz"
@@ -100,9 +65,9 @@ func (e *Eos) CreateAccount(ctx context.Context, newAccountStr, newAccountPubKey
 	// 构建购买RAM的Action（假设购买8KB RAM）
 	buyRAMAction := system.NewBuyRAMBytes(creator, newAccount, 2048)
 
-	// openAction := eos.Action{
-	// 	Account: eos.AccountName("eosio.token"),
-	// 	ActionData: eos.ActionData{
+	// openAction := kaspa.Action{
+	// 	Account: kaspa.AccountName("eosio.token"),
+	// 	ActionData: kaspa.ActionData{
 	// 		Data: Open{
 	// 			Owner:    newAccountName,
 	// 			Symbol:   "4,EOS",
@@ -111,10 +76,10 @@ func (e *Eos) CreateAccount(ctx context.Context, newAccountStr, newAccountPubKey
 	// 	},
 	// }
 	// 构建抵押CPU和NET的Action（分别抵押0.1 EOS）
-	//delegateBWAction := system.NewDelegateBW(creator, newAccount, eos.NewEOSAsset(1000), eos.NewEOSAsset(1000), false)
+	//delegateBWAction := system.NewDelegateBW(creator, newAccount, kaspa.NewEOSAsset(1000), kaspa.NewEOSAsset(1000), false)
 
 	// 构建转账一些初始EOS到新账户的Action（可选，这里转0.1 EOS）
-	//transferAction := token.NewTransfer(creator, newAccount, eos.NewEOSAsset(1000), "Initial balance")
+	//transferAction := token.NewTransfer(creator, newAccount, kaspa.NewEOSAsset(1000), "Initial balance")
 
 	txOpts := &eos.TxOptions{}
 	if err := txOpts.FillFromChain(ctx, e.Client.API); err != nil {

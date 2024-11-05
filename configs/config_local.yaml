@@ -30,12 +30,12 @@ db:
 
 node:
   url:
-    #- "https://mainnet.genereos.io"
-    #- "https://eos.eosphere.io"
+    - "10.34.0.108:16210"
+    #- "https://kaspa.eosphere.io"
     #- "http://10.42.16.56:8888"
     #- "http://10.34.0.108:8888"
     #- "https://node2.eosphere.io"
-    - "https://api.eosrio.io"
+    #- "https://api.eosrio.io"
   confirm: 12
   gasPrice: 1000000000
   #accountID: "shikanokopay"
@@ -43,12 +43,13 @@ node:
   accountID: "shikanoko.gm"
   privateKey: "5KMHTN5mhAVRz71QvMcgZP4kEsm3bGo6JqkbMVg3kQDMK6oGseG"
   retry: 3
-
+testNet:
+  Enable: true
 wallet:
   deposit:
-    accountID: "eosexdeposit"
-    privateKey: "5JK3CcFy9tULdUTMf4XiSWZVfoSJ5Mw45tT1YjsHdHMA2i6RjPq"
-    publicKey: "EOS7n9oiHdNxmQjue9fjUg42ZoyEKwGqfcjUpQ6YfH6ydkMyzZyyg"
+    accountID: "kaspa:qpq76e7wgkvce6vepccwga9284l835epyl0lnfedhkfde4r03uqm6hrnxuwc5"
+    privateKey: "affcb6bd3bfaf224b4f3ab2f016d5a8de44d3fd8928e1f9365bde3ad23d27c8d"
+    publicKey: "41ed67ce45998ce9990e30e474aa3d7e78d32127dff9a72dbd92dcd46f8f01bd"
 
 notify:
   opDevURL: "http://61.216.66.135:78"
